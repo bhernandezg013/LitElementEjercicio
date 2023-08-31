@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import "./component-list"
 
 class Ejercicio extends LitElement {
 
@@ -22,20 +23,25 @@ class Ejercicio extends LitElement {
         const resp = await fetch('https://hp-api.onrender.com/api/characters');
         const json = await resp.json();
         this.arrayPersonajes = json;
-        console.log(this.arrayPersonajes);
     }
 
     handleKeyDown(event) {
         if (event.key === "Enter" && this.arrayPersonajes.length > 0) {
             const value = event.target.value;
-            console.log(value);
-            this.arrayFiltrados = this.arrayPersonajes.filter(personaje => personaje.name == value);
+            // this.arrayFiltrados = this.arrayPersonajes.filter(personaje => personaje.name == value);
+            this.arrayFiltrados = this.arrayPersonajes.filter(personaje => personaje.name.toLowerCase().includes(value));
+            event.target.value = '';
         }
     }
 
-    selectPersonaje(event, house) {
-        if (this.arrayPersonajes.length > 0 ) {
-            this.arraySelectFilter = this.arrayPersonajes.filter(personaje => personaje.house == house)
+    selectPersonaje(event) {
+        const selectedHouse = event.target.value;
+        if (selectedHouse && this.arrayPersonajes.length > 0) {
+            this.arraySelectFilter = this.arrayPersonajes.filter(personaje =>
+                personaje.house.toLowerCase().includes(selectedHouse.toLowerCase())
+            );
+        } else if (selectedHouse === 'Selecciona un valor') {
+            this.arraySelectFilter = [];
         }
     }
 
@@ -44,64 +50,41 @@ class Ejercicio extends LitElement {
 
             <h1>Buscar Personaje:</h1>
             <input type="text" @keydown=${this.handleKeyDown}>
-            <ul>
-                ${this.arrayFiltrados.length > 0
+            ${this.arrayPersonajes
                 ? html`
-                    ${this.arrayFiltrados.map((personaje, index) =>
-                    html`<li>
-                        ${personaje.name}
-                        <img src=${personaje.image ? personaje.image : 'https://th.bing.com/th/id/OIP.vvmpWt0qBu3LeBgZuUfmGAHaFt?pid=ImgDet&rs=1'} style="width: 50px;">
-                    </li>`
-                )}
+                    <component-list .arrayPersonajes="${this.arrayFiltrados}" ></component-list>
                 `
-                : html``
+                : `Cargando Personajes`
             }
-            </ul>
 
 
             <h1>Seleccionar Personaje</h1>
-            <select name="personajes">
-                <option value="">selecciona un valor</option>
-                <option @click="${event => this.selectPersonaje(event, 'Gryffindor')}" value="Gryffindor">Gryffindor</option>
-                <option @click="${event => this.selectPersonaje(event, 'Hufflepuff')}" value="Hufflepuff">Hufflepuff</option>
-                <option @click="${event => this.selectPersonaje(event, 'Ravenclaw')}" value="Ravenclaw">Ravenclaw</option>
-                <option @click="${event => this.selectPersonaje(event, 'Slytherin')}" value="Slytherin">Slytherin</option>
+            <select name="personajes" @change="${this.selectPersonaje}">
+                <option value="Selecciona un valor">Selecciona un valor</option>
+                ${this.arraySelect.map(house => html`
+                    <option value="${house}">${house}</option>
+                `)}
             </select>
-            <ul>
-                ${this.arraySelectFilter.length > 0
+
+            ${this.arraySelectFilter.length > 0
                 ? html`
-                    ${this.arraySelectFilter.map((personaje, index) =>
-                    html`<li>
-                        ${personaje.name}
-                        <img src=${personaje.image ? personaje.image : 'https://th.bing.com/th/id/OIP.vvmpWt0qBu3LeBgZuUfmGAHaFt?pid=ImgDet&rs=1'} style="width: 50px;">
-                    </li>`
-                )}
+                    <component-list .arrayPersonajes="${this.arraySelectFilter}" ></component-list>
                 `
-                : html``
+                : ``
             }
-            </ul>
             
 
-            
-
-
-
-
+        
             <h1>Todos los personajes: </h1>
             
-            <ul>
-                ${this.arrayPersonajes.length > 0
+            ${this.arrayPersonajes
                 ? html`
-                    ${this.arrayPersonajes.map((personaje, index) =>
-                    html`<li>
-                        ${personaje.name}
-                        <img src=${personaje.image ? personaje.image : 'https://th.bing.com/th/id/OIP.vvmpWt0qBu3LeBgZuUfmGAHaFt?pid=ImgDet&rs=1'} style="width: 50px;">
-                    </li>`
-                )}
+                    <component-list .arrayPersonajes="${this.arrayPersonajes}" ></component-list>
                 `
-                : html`No hay elementos`
+                : `Cargando Personajes`
             }
-            </ul>
+
+
 
         `
     }
